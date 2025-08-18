@@ -1,0 +1,23 @@
+@use './utilities';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --metal-black: linear-gradient(
+    130deg,
+    #0a0a0a 10%,
+    #131313 20%,
+    #1c1c1e 40%,
+    #2b2b2b 60%,
+    #1c1c1e 80%,
+    #0a0a0a 100%
+  );
+  --metal-gold: linear-gradient(145deg, #ad8a39, #ead196);
+  --metal-silver: linear-gradient(145deg, #bfc5c2, #f5f5f5, #a9a9a9);
+}
+
+body {
+  @apply bg-brand-light-gray w-full h-[100dvh] flex flex-col;
+}
