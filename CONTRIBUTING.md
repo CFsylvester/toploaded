@@ -30,6 +30,7 @@ yarn dev
 We use **direnv** to load environment variables from `.envrc`.
 
 Required variables:
+
 ```sh
 export NEXT_PUBLIC_SUPABASE_URL="https://<project>.supabase.co"
 export NEXT_PUBLIC_SUPABASE_ANON_KEY="<anon>"
@@ -39,6 +40,7 @@ export SUPABASE_PROJECT_REF="<project-ref>"
 ```
 
 Validate:
+
 ```bash
 echo $SUPABASE_PROJECT_REF
 supabase --version
@@ -70,16 +72,22 @@ supabase --version
 We are **DB-first** with Drizzle migrations and Supabase types.
 
 ### When changing the schema
-1) Edit or add `pgTable` files in `src/db/schema/`.
-2) Generate SQL migrations:
+
+1. Edit or add `pgTable` files in `src/db/schema/`.
+2. Generate SQL migrations:
+
 ```bash
 yarn db:gen
 ```
-3) Apply migrations to the Supabase database:
+
+3. Apply migrations to the Supabase database:
+
 ```bash
 yarn db:migrate
 ```
-4) Regenerate TypeScript types from the live database:
+
+4. Regenerate TypeScript types from the live database:
+
 ```bash
 yarn db:types
 ```
@@ -87,13 +95,170 @@ yarn db:types
 > Always run **db:types** after migrating so the application stays strongly typed.
 
 ### Adding Row Level Security (RLS)
+
 - RLS policies should live in SQL migrations created by Drizzle Kit or hand-written.
 - Name policies clearly and scope them by `auth.uid()` (or service role where appropriate).
 - If you add RLS, verify both **anonymous** and **service role** behavior with quick smoke tests in a route handler or script.
 
 ### Seeds (optional)
+
 - Prefer **idempotent** seeds (use `on conflict do nothing` or `insert ... where not exists` patterns).
 - If you include seed scripts, store them in `/supabase/seeds` or `/scripts/seed.ts`.
+
+### Version Control for Database Files
+
+**What to commit:**
+
+- ✅ `/drizzle/*.sql` - Migration files (essential for team sync and deployments)
+- ✅ `/src/db/schema/*` - Your Drizzle schema definitions
+- ✅ `/supabase/types/database.ts` - Generated types (after running `yarn db:types`)
+
+**What NOT to commit:**
+
+- ❌ `/drizzle/meta/` - Environment-specific metadata (already in `.gitignore`)
+
+**Why commit migration files?**
+
+- **Team synchronization:** Everyone gets the same database structure
+- **Deployment consistency:** Production applies the exact same schema changes
+- **Database version control:** Historical record of schema evolution
+- **Rollback capability:** Can revert to previous database states if needed
+
+**Example workflow:**
+
+```bash
+# 1. You add a new table to your schema
+vim src/db/schema/products.ts
+
+# 2. Generate migration
+yarn db:gen  # Creates drizzle/0003_add_products.sql
+
+# 3. Apply locally and regenerate types
+yarn db:migrate
+yarn db:types
+
+# 4. Commit the migration file (but not meta/)
+git add drizzle/0003_add_products.sql src/db/schema/products.ts supabase/types/database.ts
+git commit -m "feat: add products table"
+
+# 5. Teammate pulls and applies
+git pull
+yarn db:migrate  # Applies your migration to their local DB
+```
+
+---
+
+## Production Deployments & Database Migrations
+
+### ⚠️ Critical: Production Database Updates
+
+**NEVER run `yarn db:migrate` directly against production.** This could cause downtime or data loss.
+
+### Recommended Production Workflow
+
+#### Option 1: Manual Migration (Current Setup)
+
+1. **Deploy code first** (without running migrations)
+2. **Test migrations on staging** environment first
+3. **Run migrations manually** during maintenance window:
+
+   ```bash
+   # Set production env vars
+   export DATABASE_URL="postgres://postgres:<prod-password>@<prod-host>:5432/postgres?sslmode=require"
+   export SUPABASE_PROJECT_REF="<prod-project-ref>"
+
+   # Apply migrations
+   yarn db:migrate
+   ```
+
+4. **Verify** application works with new schema
+5. **Monitor** for any issues
+
+#### Option 2: Automated CI/CD (Recommended)
+
+Set up GitHub Actions to handle deployments:
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy to Production
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - run: yarn install --frozen-lockfile
+      - run: yarn build
+
+      # Apply migrations to production
+      - name: Run Database Migrations
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+          SUPABASE_PROJECT_REF: ${{ secrets.PROD_SUPABASE_PROJECT_REF }}
+        run: yarn db:migrate
+
+      # Deploy to Vercel
+      - uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+```
+
+### Migration Safety Checklist
+
+Before deploying migrations to production:
+
+- [ ] **Test on staging** with production-like data
+- [ ] **Backup database** before applying migrations
+- [ ] **Review migration SQL** for potential issues:
+  - Adding NOT NULL columns without defaults
+  - Dropping columns that might still be in use
+  - Large table alterations that could cause locks
+- [ ] **Plan rollback strategy** if something goes wrong
+- [ ] **Schedule during low-traffic** periods if possible
+- [ ] **Monitor application** after deployment
+
+### Emergency Rollback
+
+If you need to rollback a migration:
+
+1. **Revert the code** deployment first
+2. **Manually rollback database** changes:
+
+   ```sql
+   -- Example: If you added a column, drop it
+   ALTER TABLE users DROP COLUMN new_column;
+
+   -- If you changed a constraint, revert it
+   ALTER TABLE users DROP CONSTRAINT new_constraint;
+   ```
+
+3. **Update migration history** to prevent re-application
+
+### Environment-Specific Considerations
+
+- **Staging**: Should mirror production env vars and run same migration process
+- **Production**: Use connection pooling, read replicas if available
+- **Development**: Can use `db:push` for quick prototyping (bypasses migrations)
+
+### Monitoring Production Migrations
+
+After applying migrations:
+
+- Check application logs for database errors
+- Monitor query performance for any regressions
+- Verify all features work as expected
+- Check database metrics (connection counts, query times)
 
 ---
 
@@ -170,6 +335,7 @@ yarn build && yarn start
 
 - **Cannot find module '@/...'**  
   Ensure `tsconfig.json` has:
+
   ```json
   {
     "compilerOptions": {
