@@ -1,6 +1,9 @@
 import { camelCase } from 'change-case';
 import { snakeCase } from 'change-case';
 
+// Export Supabase clients
+export * from './supabase';
+
 /** --------------------------------------------------------------------------
  * Convert object keys to snake case.
  * @param obj - The object to convert.
