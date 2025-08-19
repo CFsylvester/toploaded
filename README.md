@@ -3,7 +3,7 @@
 Full-stack **Next.js (App Router)** + **Supabase** + **Drizzle ORM**.  
 Typed end-to-end, migrations you control, and a clean split between **infra**, **db**, and **app**.
 
-> 📖 **Developer Guide**: See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed development guidelines and contribution workflow.
+> 📖 **Developer Guide**: See [CONTRIBUTING_README.md](./CONTRIBUTING_README.md) for detailed development guidelines and contribution workflow.
 
 ---
 
@@ -53,6 +53,7 @@ yarn build && yarn start
 /scripts
   migrate.ts                # runs drizzle SQL migrations
 /drizzle                    # generated SQL migrations
+/docs                       # documentation (optional)
 ```
 
 ---
@@ -170,3 +171,33 @@ yarn start
 1. Push code to GitHub.
 2. Set env vars on Vercel (same as `.envrc` but without `export`).
 3. Vercel will run `yarn build` and host at your domain.
+
+---
+
+## 🗂️ Database Schema
+
+This project implements a **multi-tenant trading card marketplace** with the following key domains:
+
+### **Core Entities**
+
+- **Multi-tenancy**: `tenants`, `tenant_domains`, `users`, `roles`, `user_roles`
+- **Cards & Variants**: `cards`, `card_variants`, `card_prints`, `graded_cards`
+- **Pricing**: `card_prices`, `price_snapshots`
+- **Inventory**: `inventory_items`, `barcodes`, `storage_locations`
+- **Orders & Sales**: `orders`, `order_items`, `listings`, `payments`, `shipments`, `addresses`
+- **System**: `audits`, `games`, `sets`
+
+### **Key Relationships**
+
+- A **tenant** owns cards, sets, users, inventory, and orders
+- A **set** belongs to a `game` and a `tenant`
+- A **card** belongs to a `set` and `tenant`
+- **Inventory items** may reference a `card_print` OR a `graded_card`
+- **Listings** sell inventory items
+- **Orders** contain many `order_items` with payments and shipments
+
+### **Multi-tenancy Pattern**
+
+Everything ties back to `tenant_id`. Always scope queries by tenant for security and data isolation.
+
+> 📖 **Detailed Schema Guide**: See [SCHEMA_README.md](./SCHEMA_README.md) for complete database documentation, diagrams, and workflow examples.
