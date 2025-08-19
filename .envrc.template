@@ -1,0 +1,59 @@
+# —————————————————————————————
+# Environment Configuration Template (for direnv)
+# —————————————————————————————
+
+# Copy this file to .envrc and fill in your actual values
+# Then run: direnv allow
+
+# —————————————————————————————
+# Supabase Configuration
+# —————————————————————————————
+
+# Supabase Project URL (public)
+export NEXT_PUBLIC_SUPABASE_URL="https://<your-project>.supabase.co"
+
+# Supabase Anonymous Key (public)
+export NEXT_PUBLIC_SUPABASE_ANON_KEY="<your-anon-key>"
+
+# Supabase Service Role Key (server-only, keep secret!)
+export SUPABASE_SERVICE_ROLE_KEY="<your-service-role-key>"
+
+# Supabase Project Reference ID
+export SUPABASE_PROJECT_REF="<your-project-ref>"
+
+# —————————————————————————————
+# Database Configuration
+# —————————————————————————————
+
+# Database URL (for Drizzle migrations and direct connections)
+export DATABASE_URL="postgres://postgres:<password>@<host>:5432/postgres?sslmode=require"
+
+# Alternative: Individual database components
+# export DB_HOST="<your-db-host>.supabase.co"
+# export DB_PORT="5432"
+# export DB_USER="postgres"
+# export DB_PASSWORD="<your-db-password>"
+# export DB_NAME="postgres"
+
+# —————————————————————————————
+# Instructions
+# —————————————————————————————
+
+# 1. Copy this file to .envrc: cp .envrc.template .envrc
+# 2. Fill in your actual values from Supabase dashboard
+# 3. Run: direnv allow
+# 4. Your environment variables will be loaded automatically
+# 5. Never commit .envrc (it's in .gitignore)
+
+# —————————————————————————————
+# Getting Your Values
+# —————————————————————————————
+
+# Supabase Dashboard → Settings → API
+# - Project URL: NEXT_PUBLIC_SUPABASE_URL
+# - anon/public key: NEXT_PUBLIC_SUPABASE_ANON_KEY  
+# - service_role key: SUPABASE_SERVICE_ROLE_KEY
+# - Project ref: SUPABASE_PROJECT_REF
+
+# Supabase Dashboard → Settings → Database
+# - Connection string: DATABASE_URL
