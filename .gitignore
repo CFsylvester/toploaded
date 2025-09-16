@@ -47,4 +47,6 @@ next-env.d.ts
 /drizzle/meta/
 
 # supabase
-/supabase/.temp/
+supabase/types/
+supabase/.temp/
+supabase/.branches/
