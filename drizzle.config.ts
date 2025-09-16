@@ -6,4 +6,7 @@ export default defineConfig({
   dialect: 'postgresql',
   strict: true,
   verbose: true,
+  dbCredentials: {
+    url: process.env.DB_URL ?? '', // Provide empty string as fallback
+  },
 });
