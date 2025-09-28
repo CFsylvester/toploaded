@@ -1,27 +1,22 @@
-import { pgTable, text, date, integer, boolean, timestamp } from 'drizzle-orm/pg-core';
-import { games } from '../base/games';
+import { pgTable, text, timestamp, jsonb } from 'drizzle-orm/pg-core';
+import { sets } from '../base/sets';
 
 export const pokemonSets = pgTable('pokemon_sets', {
-  id: text('id').primaryKey(), // Pokemon API set ID (e.g., "base1", "gym1")
-  gameId: text('game_id')
-    .notNull()
-    .references(() => games.id), // Always 'pokemon'
+  id: text('id')
+    .primaryKey()
+    .references(() => sets.id, { onDelete: 'cascade' }),
 
-  // Set information
-  name: text('name').notNull(), // "Base Set", "Jungle", "Team Rocket"
+  // Pokemon-specific set information
   series: text('series'), // "Base", "Gym", "Neo"
-  releaseDate: timestamp('release_date'),
-  totalCards: integer('total_cards'),
+  searchableSeries: text('searchable_series'), // uses the util toSearchableFormat + fromSearchableFormat
 
-  // Set images
-  logoUrl: text('logo_url'),
-  symbolUrl: text('symbol_url'),
-
-  // Processing status flags (from your original processSet logic)
-  setImagesDownloaded: boolean('set_images_downloaded').default(false),
-  setImagesUploaded: boolean('set_images_uploaded').default(false),
-  cardArtDownloaded: boolean('card_art_downloaded').default(false),
-  cardArtUploaded: boolean('card_art_uploaded').default(false),
+  // Pokemon-specific images
+  images: jsonb('images')
+    .$type<{
+      logo?: string | null;
+      symbol?: string | null;
+    }>()
+    .notNull(),
 
   // Timestamps
   createdAt: timestamp('created_at').defaultNow().notNull(),
