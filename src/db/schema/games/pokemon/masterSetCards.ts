@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, unique } from 'drizzle-orm/pg-core';
-import { masterSetCards } from '../base/masterSetCards';
+import { masterSetCards } from '../../masterSets/masterSetCards';
 
 export const pokemonMasterSetCards = pgTable('pokemon_master_set_cards', {
   id: text('id')
