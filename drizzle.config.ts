@@ -1,4 +1,10 @@
 import { defineConfig } from 'drizzle-kit';
+const dbUrl =
+  process.env.ENVIRONMENT === 'production' ? process.env.PROD_DB_URL : process.env.STAGING_DB_URL;
+
+if (!dbUrl) {
+  throw new Error('Database URL is not defined');
+}
 
 export default defineConfig({
   schema: './src/db/schema', // folder with your pgTable files
@@ -7,6 +13,6 @@ export default defineConfig({
   strict: true,
   verbose: true,
   dbCredentials: {
-    url: process.env.DB_URL ?? '', // Provide empty string as fallback
+    url: dbUrl,
   },
 });

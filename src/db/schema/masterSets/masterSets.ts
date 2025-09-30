@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, boolean } from 'drizzle-orm/pg-core';
-import { sets } from './sets';
+import { sets } from '../base/sets';
 
 export const masterSets = pgTable('master_sets', {
   id: text('id').primaryKey(), // UUID

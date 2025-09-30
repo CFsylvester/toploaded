@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, jsonb } from 'drizzle-orm/pg-core';
-import { sets } from '../base/sets';
+import { sets } from '../../base/sets';
 
 export const pokemonSets = pgTable('pokemon_sets', {
   id: text('id')
